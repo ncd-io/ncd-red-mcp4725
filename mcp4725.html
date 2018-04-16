@@ -6,7 +6,6 @@
             name: {value: ""},
 			connection: {value: "", type: "ncd-comm"},
 			addr: {value: "96"},
-			interval: {value: 0, validate: RED.validators.number()},
 			persist: {value: ""},
 			startup: {value: ""},
 			eeprom_pd: {value: 0, validate: RED.validators.number()},
@@ -48,10 +47,6 @@
 			<option value="97">97</option>
 		</select>
     </div>
-	<div class="form-row">
-        <label for="node-input-interval"><i class="icon-repeat"></i> Interval</label>
-        <input type="text" id="node-input-interval" placeholder="Interval">
-    </div>
 	<h4>Advanced Startup</h4>
 	<div class="form-row">
 		<label for="node-input-persist"><i class="icon-tag"></i> Persist Device State*</label>
@@ -83,54 +78,18 @@
     <h3>I2C Connection</h3>
 	<p>Configure the connection you want to use to communicate to your I2C device. Native I2C and USB to I2C converters are supported.</p>
 	<h3>Device Address</h3>
-	<p>The MCP4725 exposes hardware pins to make it easily addressable, on the NCD version these pins are controlled with jumpers and have the following values:</p>
+	<p>The MCP4725 exposes a hardware pin to make it easily addressable, on the NCD version this pin is controlled with a jumper which has the following values:</p>
 	<ul>
-		<li><b>None</b> 32</li>
-		<li><b>A0</b> 33</li>
-		<li><b>A1</b> 34</li>
-		<li><b>A0+A1</b> 35</li>
-		<li><b>A2</b> 36</li>
-		<li><b>A2+A0</b> 37</li>
-		<li><b>A2+A1</b> 38</li>
-		<li><b>All</b> 39</li>
+		<li><b>Uninstalled</b> 96</li>
+		<li><b>Installed</b> 97</li>
 	</ul>
-	<h3>Interval</h3>
-	<p>The interval defines the time between status checks. It is in milliseconds, and the interval starts after the previous check has finished.</p>
-	<h3>Message on Change</h3>
-	<p>If this option is set, the device will only generate an output message if the status of the inputs or outputs has changed since the last status check or command.</p>
-	<h3>Output on Init</h3>
-	<p>Select this to automatically output the initial state of the board when the node is deployed or redeployed. This includes when node red is started.</p>
-	<h3>Output All Channels</h3>
-	<p>By default this device will have 1 output, which will send a payload anytime it detects a status change on the device (or everyime it recieves a message with a topic of "get_status"). Use this option to enable seperate outputs for each channel.</p>
-	<h3>Channel Direction</h3>
-	<p>Each selected channel will be configured as an output. Any channels left unchecked will be pulled up internally and set as an input.</p>
 	<h3>Persist Device State</h3>
-	<p><b>This setting is only effective if an interval is defined</b></p>
-	<p>This will store the last known good state of the controller locally so if it loses power it can recover. This should be used with care, if you are running on an SD card this can cause more wear.</p>
+	<p>Check this box to write all updates to the internal EEPROM of the chip. This will ensure that on power loss, the chip will return to its previous state.</p>
+	<p><b>All EEPROM is subject to wear, frequent writes to these registers over time may cause it to stop functioning. Check with the chip manufacturer for the average life of the EEPROM</b></p>
 	<h3>Startup State</h3>
-	<p><b>This setting is only effective if an interval is defined</b></p>
-	<p>If you are not using Persist Device State, you can set a startup state for the outputs here, this should be an integer as described below in the Input Values section relating to the "all" topic.
+	<p>If you are not using Persist Device State, you can set a startup state for the output here, this should be an integer as described below in the Input Values section.
 	<h3>Input values</h3>
-	<p>You can send commands to the device through the use of topics and payloads. Any input messages that do not contain a compatible topic will be ignored. The compatible topics are:</p>
-	<ul>
-		<li><b>get_status</b> Forces a status check outside of the normal interval.</li>
-		<li><b>all</b> Allows you to send a single byte to control all channels (see below)</li>
-		<li><b>channel_(n)</b> Addresses a specific channel (1-8), and expects a payload of 0 or 1 to turn the output off or on, respectively.</li>
-	</ul>
-	<i>When sending a single byte to control all channels, the LSB will control channel 1 and the MSB will control channel 8. Set bits turn the output on, unset bits turn the output off. 00000001 = channel 1, 10000000 = channel 8, you can get the correct value by running this in your JS console <code>parseInt("10100000", 2);</code>. </i>
+	<p>You can send commands to the device through the use of and payloads. To control the output of the DAC, send an integer 0-4095 (inclusive).</p>
 	<h3>Output Values</h3>
-	<p>When Output All Channels is selected, each output represents a channel, the topic will indicate the channel (channel_(n)), and the payload will be 1 or 0</p>
-	<p>The last output on the node (the only output if Output All Channels is not selected) will send an object as the payload keyed by the channel, with a 1 or 0 defining the status. A status of 1 on an output indicates that it is active, a status of 1 on an input means it is being pulled to ground.</p>
-	<p>i.e.:<br />
-	{<br/>
-		channel_1:1,<br/>
-		channel_2:0,<br/>
-		channel_3:0,<br/>
-		channel_4:0,<br/>
-		channel_5:1,<br/>
-		channel_6:1,<br/>
-		channel_7:0,<br/>
-		channel_8:0<br/>
-		}</p>
-
+	<p>Any time the device connects (or node-red restarts), or a new command is sent to the device, an output message will be sent with the current state of the DAC in the payload, this value will be 0-4095 (inclusive).</p>
 </script>

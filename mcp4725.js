@@ -2,11 +2,6 @@
 
 const MCP4725 = require("./index.js");
 
-process.on('unhandledRejection', error => {
-  console.log('unhandledRejection', error);
-});
-
-
 module.exports = function(RED){
 	var sensor_pool = {};
 	var loaded = [];
@@ -15,19 +10,15 @@ module.exports = function(RED){
 
 	function NcdI2cDeviceNode(config){
 		RED.nodes.createNode(this, config);
-		this.interval = parseInt(config.interval);
 		this.addr = parseInt(config.addr);
 		if(typeof sensor_pool[this.id] != 'undefined'){
 			//Redeployment
-			clearTimeout(sensor_pool[this.id].timeout);
 			delete(sensor_pool[this.id]);
 		}
 
 		this.sensor = new MCP4725(this.addr, RED.nodes.getNode(config.connection).i2c, config);
 		sensor_pool[this.id] = {
 			sensor: this.sensor,
-			polling: false,
-			timeout: 0,
 			node: this
 		}
 
@@ -42,44 +33,20 @@ module.exports = function(RED){
 			return true;
 		}
 
-		function start_poll(force){
-			if(node.interval && !sensor_pool[node.id].polling){
-				stop_poll();
-				sensor_pool[node.id].polling = true;
-				get_status(true, force);
-			}
-		}
-
-		function stop_poll(){
-			clearTimeout(sensor_pool[node.id].timeout);
-			sensor_pool[node.id].polling = false;
-		}
 		var last_status = false;
 		function send_payload(status, force){
-			if(last_status == status.dac) return;
+			if(!force && last_status == status.dac) return;
 			last_status = status.dac;
 			var msg = {topic: 'device_status', payload: status.dac, settings: status};
 			node.send(msg);
 		}
 
-		function get_status(repeat, force){
-			if(repeat) clearTimeout(sensor_pool[node.id].timeout);
+		function get_status(force){
 			if(device_status(node)){
 				node.sensor.get().then((res) => {
 					send_payload(res, force);
 				}).catch((err) => {
 					node.send({error: err});
-				}).then(() => {
-					if(repeat && node.interval){
-						clearTimeout(sensor_pool[node.id].timeout);
-						sensor_pool[node.id].timeout = setTimeout(() => {
-							if(typeof sensor_pool[node.id] != 'undefined'){
-								get_status(true);
-							}
-						}, node.interval);
-					}else{
-						sensor_pool[node.id].polling = false;
-					}
 				});
 			}else{
 				clearTimeout(sensor_pool[node.id].timeout);
@@ -103,16 +70,16 @@ module.exports = function(RED){
 							typeof msg.pd != 'undefined' ? msg.pd : false
 						]
 						node.sensor.set(...args).then().catch().then(() => {
-							start_poll()
+							get_status()
 						});
 					}
 				}else{
 					node.sensor.set(msg.payload).then().catch().then(() => {
-						start_poll()
+						get_status();
 					});
 				}
 			}else{
-				start_poll(true);
+				get_status(true);
 			}
 		});
 
@@ -124,8 +91,7 @@ module.exports = function(RED){
 			done();
 		});
 
-		start_poll();
-		device_status(node);
+		get_status(true);
 	}
 	RED.nodes.registerType("ncd-mcp4725", NcdI2cDeviceNode)
 }

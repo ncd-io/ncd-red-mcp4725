@@ -17,6 +17,7 @@ module.exports = class MCP4725{
 			eeprom_pd: 0,
 			eeprom_dac: 2048
 		}, config);
+		if(this.config.persist) this.config.startup = false; 
 		this.comm = comm;
 		this.addr = addr;
 		this.initialized = false;
