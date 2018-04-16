@@ -89,7 +89,8 @@
 	<h3>Startup State</h3>
 	<p>If you are not using Persist Device State, you can set a startup state for the output here, this should be an integer as described below in the Input Values section.
 	<h3>Input values</h3>
-	<p>You can send commands to the device through the use of and payloads. To control the output of the DAC, send an integer 0-4095 (inclusive).</p>
+	<p>You can send commands to the device through the use of payloads. To control the output of the DAC, send an integer 0-4095 (inclusive).</p>
 	<h3>Output Values</h3>
+	<p>When Output All Channels is selected, each output represents a channel, the topic will indicate the channel (channel_(n)), and the payload will be the DAV value</p>
 	<p>Any time the device connects (or node-red restarts), or a new command is sent to the device, an output message will be sent with the current state of the DAC in the payload, this value will be 0-4095 (inclusive).</p>
 </script>
