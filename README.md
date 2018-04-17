@@ -1,8 +1,6 @@
-[![MCP4725](./mcp4725.png)](https://store.ncd.io/?fwpcache=all&fwp_chip_name=mcp4725)
-
-# Overview
-
 This library provides a class for the MCP4725, it relies on the ncd-red-comm library for communication, and includes a node-red node for the MCP4725. The MCP4725 is a low-power, high accuracy, single channel, 12-bit buffered voltage output Digital-to-Analog Convertor (DAC) with non-volatile memory (EEPROM). [Ncd.io](https://ncd.io) manufactures multiple mini-modules that utilize this chip for different applications. You can see a [list here](https://store.ncd.io/?fwpcache=all&fwp_chip_name=mcp4725).
+
+[![MCP4725](./mcp4725.png)](https://store.ncd.io/?fwpcache=all&fwp_chip_name=mcp4725)
 
 ### Installation
 
