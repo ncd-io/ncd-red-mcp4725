@@ -60,7 +60,6 @@ module.exports = function(RED){
 		}
 
 		node.on('input', (msg) => {
-			stop_poll();
 			if(msg.topic != 'get_status'){
 				if(typeof msg.payload == 'object'){
 					if(typeof msg.dac != 'undefined'){
